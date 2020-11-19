@@ -49,6 +49,6 @@ class Seq2SickCheng2018BlackBox(AttackRecipe):
         #
         # Greedily swap words with "Word Importance Ranking".
         #
-        search_method = GreedyWordSwapWIR(wir_method="unk")
+        search_method = GreedyWordSwapWIR(wir_method="gradient")  # switched this from 'unk' to 'gradient'
 
         return Attack(goal_function, constraints, transformation, search_method)
