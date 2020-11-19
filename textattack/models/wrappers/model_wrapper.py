@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+import re
+
+PEGASUS_PATTERN = re.compile("(\d|,|.)+(,|\.){1}$")
 
 
 class ModelWrapper(ABC):
@@ -39,7 +42,7 @@ class ModelWrapper(ABC):
         """Helper method for `tokenize`"""
         raise NotImplementedError()
 
-    def tokenize(self, inputs, strip_prefix=False):
+    def tokenize(self, inputs, strip_prefix=False, split_num_punct=True):
         """Helper method that tokenizes input strings
         Args:
             inputs (list[str]): list of input strings
@@ -50,14 +53,36 @@ class ModelWrapper(ABC):
         tokens = self._tokenize(inputs)
         if strip_prefix:
             # `aux_chars` are known auxiliary characters that are added to tokens
-            strip_chars = ["##", "Ġ", "__"]
+            strip_chars = ["##", "Ġ", "__", "▁"]
             # TODO: Find a better way to identify prefixes. These depend on the model, so cannot be resolved in ModelWrapper.
 
             def strip(s, chars):
                 for c in chars:
                     s = s.replace(c, "")
+
                 return s
 
             tokens = [[strip(t, strip_chars) for t in x] for x in tokens]
+
+        # with the Pegasus Tokenizer, it seems that numbers that have
+        # commas immediately after them are joined with the comma. I.e.
+        # a token produced by the PegasusTokenizer might look like: '22,'
+        # I think this is a problem; this is fixed with the code below
+        if split_num_punct:
+            new_tokens = []
+
+            for i in range(len(tokens)):
+                new_tokens_i = []
+                for token in tokens[i]:
+                    if bool(PEGASUS_PATTERN.match(token)):
+                        number = token[:-1]
+                        punctuation = token[-1]
+                        new_tokens_i.append(number)
+                        new_tokens_i.append(punctuation)
+                    else:
+                        new_tokens_i.append(token)
+                new_tokens.append(new_tokens_i)
+
+            tokens = new_tokens
 
         return tokens
