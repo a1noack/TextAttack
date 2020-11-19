@@ -443,7 +443,8 @@ class AttackedText:
         Returns:
             word2token_mapping (dict[str. list[int]]): Dictionary that maps word to list of indices.
         """
-        tokens = model_wrapper.tokenize([self.tokenizer_input], strip_prefix=True)[0]
+        tokens = model_wrapper.tokenize([self.tokenizer_input], strip_prefix=True, split_num_punct=True)[0]  # this seems to be working correctly...
+
         word2token_mapping = {}
         j = 0
         last_matched = 0
@@ -451,9 +452,10 @@ class AttackedText:
             matched_tokens = []
             while j < len(tokens) and len(word) > 0:
                 token = tokens[j].lower()
-                idx = word.find(token)
+                idx = word.lower().find(token)
+
                 if idx == 0:
-                    word = word[idx + len(token) :]
+                    word = word[idx + len(token) : ]
                     matched_tokens.append(j)
                     last_matched = j
                 j += 1
