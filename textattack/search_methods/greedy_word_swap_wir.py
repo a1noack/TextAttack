@@ -20,6 +20,7 @@ from textattack.search_methods import SearchMethod
 from textattack.shared.validators import (
     transformation_consists_of_word_swaps_and_deletions,
 )
+import sys
 
 
 class GreedyWordSwapWIR(SearchMethod):
@@ -91,12 +92,16 @@ class GreedyWordSwapWIR(SearchMethod):
             gradient = grad_output["gradient"]
             word2token_mapping = initial_text.align_with_model_tokens(victim_model)
             for i, word in enumerate(initial_text.words):
-                matched_tokens = word2token_mapping[word]
-                if not matched_tokens:
-                    index_scores[i] = 0.0
-                else:
-                    agg_grad = np.mean(gradient[matched_tokens], axis=0)
-                    index_scores[i] = np.linalg.norm(agg_grad, ord=1)
+                try:
+                    matched_tokens = word2token_mapping[word]
+                    if not matched_tokens:
+                        index_scores[i] = 0.0
+                    else:
+                        agg_grad = torch.mean(gradient[matched_tokens], dim=0)
+                        index_scores[i] = torch.norm(agg_grad)
+                except KeyError:
+                    raise(KeyError("STILL GETTING A KEY ERROR HERE WITH {}. May be and issue with tokenize() in model_wrapper.py".format(word)))
+                    # index_scores[i] = 0.0
 
             search_over = False
 

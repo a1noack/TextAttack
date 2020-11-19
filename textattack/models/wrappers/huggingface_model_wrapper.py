@@ -67,6 +67,12 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
         Returns:
             Dict of ids, tokens, and gradient as numpy array.
         """
+        try:
+            if self.model.name in ['Pegasus', 'BART', 'T5']:
+                return self.model.get_grad(text_input)
+        except AttributeError:
+            pass
+
         if isinstance(self.model, textattack.models.helpers.T5ForTextToText):
             raise NotImplementedError(
                 "`get_grads` for T5FotTextToText has not been implemented yet."
@@ -124,6 +130,10 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
         Returns:
             tokens (list[list[str]]): List of list of tokens as strings
         """
+        # so it looks like what's happening here is that encode is converting
+        # the original text into tokens and then into ids; then, convert_ids_to_tokens
+        # is apparently converting the ids into tokens; this seems weird and roundabout;
+        # why not simply call tokenize on the text--doing so should return the ids.
         return [
             self.tokenizer.convert_ids_to_tokens(self.tokenizer.encode(x)["input_ids"])
             for x in inputs
