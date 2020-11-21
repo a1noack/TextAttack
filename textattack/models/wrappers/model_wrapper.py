@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import re
 
-PEGASUS_PATTERN = re.compile("(\d|,|.)+(,|\.){1}$")
+PEGASUS_PATTERN = re.compile("^(\d|[\.,])+$")
 
 
 class ModelWrapper(ABC):
@@ -74,11 +74,13 @@ class ModelWrapper(ABC):
             for i in range(len(tokens)):
                 new_tokens_i = []
                 for token in tokens[i]:
+                    if token == '':
+                        continue
                     if bool(PEGASUS_PATTERN.match(token)):
-                        number = token[:-1]
-                        punctuation = token[-1]
-                        new_tokens_i.append(number)
-                        new_tokens_i.append(punctuation)
+                        token_pieces = re.split('(\.|,)', token)
+                        for token_piece in token_pieces:
+                            if token_piece != '':
+                                new_tokens_i.append(token_piece)
                     else:
                         new_tokens_i.append(token)
                 new_tokens.append(new_tokens_i)

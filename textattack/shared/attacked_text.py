@@ -8,6 +8,7 @@ A helper class that represents a string that can be attacked.
 
 from collections import OrderedDict
 import math
+import sys
 
 import flair
 from flair.data import Sentence
@@ -450,18 +451,39 @@ class AttackedText:
         last_matched = 0
         for i, word in enumerate(self.words):
             matched_tokens = []
+            # sys.stderr.write(f'word: {word}\n')
+            # this fail counter prevents j from reaching too
+            # far down the list of tokens; this is risky because
+            # if we match a token far down the list of tokens
+            # then the last_matched value will be too high
+            # and we'll have skipped over a bunch of tokens that
+            # would have been matched by subsequent words
+            # fail_ctr = 0
             while j < len(tokens) and len(word) > 0:
                 token = tokens[j].lower()
+                # sometimes, with Pegasus Tokenizer at least,
+                # the tokens are blank strings; we don't want to
+                # match these
+                if token == '':
+                    j += 1
+                    continue
                 idx = word.lower().find(token)
+                # sys.stderr.write(f'\t{token} ')
 
                 if idx == 0:
+                    # sys.stderr.write(f'\tmatched!')
                     word = word[idx + len(token) : ]
                     matched_tokens.append(j)
                     last_matched = j
+                # elif idx == -1:
+                #     fail_ctr += 1
+                # sys.stderr.write('\n')
                 j += 1
-
-            if not matched_tokens:
-                j = last_matched
+            # this list is not empty, even though the
+            # word hasn't really match anything successfully
+            if not matched_tokens or len(word) > 0:
+                j = last_matched + 1
+                # sys.stderr.write(f'j = {last_matched}\n')
             else:
                 word2token_mapping[self.words[i]] = matched_tokens
 
