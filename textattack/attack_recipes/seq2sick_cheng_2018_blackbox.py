@@ -36,7 +36,7 @@ class Seq2SickCheng2018BlackBox(AttackRecipe):
         # Goal is non-overlapping output.
         #
         goal_function = NonOverlappingOutput(model)
-        transformation = WordSwapEmbedding(max_candidates=50)
+        transformation = WordSwapEmbedding(max_candidates=20)
         #
         # Don't modify the same word twice or stopwords
         #

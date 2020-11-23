@@ -100,8 +100,9 @@ class GreedyWordSwapWIR(SearchMethod):
                         agg_grad = torch.mean(gradient[matched_tokens], dim=0)
                         index_scores[i] = torch.norm(agg_grad)
                 except KeyError:
-                    raise(KeyError("STILL GETTING A KEY ERROR HERE WITH {}. May be and issue with tokenize() in model_wrapper.py".format(word)))
-                    # index_scores[i] = 0.0
+                    # raise(KeyError("STILL GETTING A KEY ERROR HERE WITH {}. May be and issue with tokenize() in model_wrapper.py".format(word)))
+                    index_scores[i] = 0.0
+                    sys.stderr.write(f'Getting a key error with: {word}\n')
 
             search_over = False
 
