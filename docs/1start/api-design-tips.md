@@ -17,7 +17,6 @@ One of the challenges for building such tools is that the tool should be flexibl
 
 We provide the following broad advice to help other future developers create user-friendly NLP libraries in Python:
 - To become model-agnostic, implement a model wrapper class: a model is anything that takes string input(s) and returns a prediction.
-- To become model-agnostic, implement a model wrapper class.
 - To become data-agnostic, take dataset inputs as (input, output) pairs, where each model input is represented as an OrderedDict.
 - Do not plan for inputs (tensors, lists, etc.) to be a certain size or shape unless explicitly necessary.
 - Centralize common text operations, like parsing and string-level operations, in one class.
@@ -29,6 +28,14 @@ We provide the following broad advice to help other future developers create use
  Our modular and extendable design allows us to reuse many components to offer 15+ different adversarial attack methods proposed by literature. Our model-agnostic and dataset-agnostic design allows users to easily run adversarial attacks against their own models built using any deep learning framework. We hope that our lessons from developing TextAttack will help others create user-friendly open-source NLP libraries.
 
 
+## TextAttack flowchart
+
+![TextAttack flowchart](/_static/imgs/intro/textattack_components.png)
+
+
++ Here is a summary diagram of TextAttack Ecosystem
+
+![diagram](/_static/imgs/intro/textattack_ecosystem.png)
 
 
 

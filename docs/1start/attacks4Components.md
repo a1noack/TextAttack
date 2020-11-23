@@ -1,11 +1,17 @@
-Four Components of TextAttack Attack
+Four Components of TextAttack Attacks
 ========================================
 
 To unify adversarial attack methods into one system, We formulate an attack as consisting of four components: a **goal function** which determines if the attack has succeeded, **constraints** defining which perturbations are valid, a **transformation** that generates potential modifications given an input, and a **search method** which traverses through the search space of possible perturbations.  The attack attempts to perturb an input text such that the model output fulfills the goal function (i.e., indicating whether the attack is successful) and the perturbation adheres to the set of constraints (e.g., grammar constraint, semantic similarity constraint). A search method is used to find a sequence of transformations that produce a successful adversarial example.
 
 
 
-This modular design enables us to easily assemble attacks from the literature while re-using components that are shared across attacks. \texttt{TextAttack} provides clean, readable implementations of 16 adversarial attacks from the literature. For the first time, these attacks can be benchmarked, compared, and analyzed in a standardized setting.
+This modular design enables us to easily assemble attacks from the literature while re-using components that are shared across attacks. TextAttack provides clean, readable implementations of 16 adversarial attacks from the literature. For the first time, these attacks can be benchmarked, compared, and analyzed in a standardized setting.
+
+
+- Two examples showing four components of two SOTA attacks
+![two-categorized-attacks](/_static/imgs/intro/01-categorized-attacks.png)
+
+
 
 
 
@@ -26,8 +32,23 @@ A `Transformation` takes as input an `AttackedText` and returns a list of possib
 A `SearchMethod` takes as input an initial `GoalFunctionResult` and returns a final `GoalFunctionResult` The search is given access to the `get_transformations` function, which takes as input an `AttackedText` object and outputs a list of possible transformations filtered by meeting all of the attack’s constraints. A search consists of successive calls to `get_transformations` until the search succeeds (determined using `get_goal_results`) or is exhausted.
 
 
+
+### On Benchmarking Attack Recipes
+
+- Please read our analysis paper: Searching for a Search Method: Benchmarking Search Algorithms for Generating NLP Adversarial Examples at [EMNLP BlackNLP](https://arxiv.org/abs/2009.06368). 
+
+- As we emphasized in the above paper, we don't recommend to directly compare Attack Recipes out of the box. 
+
+- This is due to that attack recipes in the recent literature used different ways or thresholds in setting up their constraints. Without the constraint space held constant, an increase in attack success rate could from an improved search or a better transformation method or a less restrictive search space. 
+
+
+
 ### Four components in Attack Recipes we have implemented 
-To run an attack recipe: `textattack attack --recipe [recipe_name]`
+
+
+- TextAttack provides clean, readable implementations of 16 adversarial attacks from the literature.
+
+- To run an attack recipe: `textattack attack --recipe [recipe_name]`
 
 
 
@@ -200,3 +221,17 @@ To run an attack recipe: `textattack attack --recipe [recipe_name]`
 </font>
 </table>
 
+
+
+- Citations
+
+```
+@misc{morris2020textattack,
+    title={TextAttack: A Framework for Adversarial Attacks, Data Augmentation, and Adversarial Training in NLP},
+    author={John X. Morris and Eli Lifland and Jin Yong Yoo and Jake Grigsby and Di Jin and Yanjun Qi},
+    year={2020},
+    eprint={2005.05909},
+    archivePrefix={arXiv},
+    primaryClass={cs.CL}
+}
+```
