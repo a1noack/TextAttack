@@ -27,6 +27,7 @@ class AutoTokenizer:
         tokenizer=None,
         max_length=256,
         use_fast=True,
+        cache_dir=None
     ):
         if not (tokenizer_path or tokenizer):
             raise ValueError("Must pass tokenizer path or tokenizer")
@@ -35,7 +36,7 @@ class AutoTokenizer:
 
         if tokenizer_path:
             self.tokenizer = transformers.AutoTokenizer.from_pretrained(
-                tokenizer_path, use_fast=use_fast
+                tokenizer_path, use_fast=use_fast, cache_dir=cache_dir
             )
         else:
             self.tokenizer = tokenizer

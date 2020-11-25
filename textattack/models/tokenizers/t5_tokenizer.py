@@ -24,7 +24,7 @@ class T5Tokenizer(AutoTokenizer):
     * english_to_romanian: translate English to Romanian
     """
 
-    def __init__(self, mode="english_to_german", max_length=64):
+    def __init__(self, mode="english_to_german", max_length=64, cache_dir=None):
         if mode == "english_to_german":
             self.tokenization_prefix = "translate English to German: "
         elif mode == "english_to_french":
@@ -36,7 +36,7 @@ class T5Tokenizer(AutoTokenizer):
         else:
             raise ValueError(f"Invalid t5 tokenizer mode {mode}.")
 
-        super().__init__(tokenizer_path="t5-base", max_length=max_length)
+        super().__init__(tokenizer_path="t5-base", max_length=max_length, cache_dir=cache_dir)
 
     def encode(self, text):
         """Encodes a string into IDs of tokens.
