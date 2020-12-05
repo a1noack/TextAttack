@@ -30,7 +30,7 @@ class Seq2SickCheng2018BlackBox(AttackRecipe):
     """
 
     @staticmethod
-    def build(model, goal_function="non_overlapping"):
+    def build(model, goal_function="non_overlapping", epsilon=30):
 
         #
         # Goal is non-overlapping output.
@@ -45,7 +45,7 @@ class Seq2SickCheng2018BlackBox(AttackRecipe):
         # In these experiments, we hold the maximum difference
         # on edit distance (ϵ) to a constant 30 for each sample.
         #
-        constraints.append(LevenshteinEditDistance(30))
+        constraints.append(LevenshteinEditDistance(epsilon))
         #
         # Greedily swap words with "Word Importance Ranking".
         #
