@@ -99,6 +99,13 @@ class AttackResult(ABC):
             if t2_idx == -1:
                 # add words in t1 that are not in t2
                 words_1_idxs.append(t1_idx)
+            elif t1_idx >= len(t1.words) and t2_idx >= len(t2.words):
+                # so there's something wrong with the index map
+                # some of the word indices in t2's original_index_map
+                # list are too big for the length of t2.words
+                print(f't1_idx = {t1_idx}, len(t1.words) = {len(t1.words)}')
+                print(f't2_idx = {t2_idx}, len(t2.words) = {len(t2.words)}')
+                pass
             else:
                 w1 = t1.words[t1_idx]
                 w2 = t2.words[t2_idx]
