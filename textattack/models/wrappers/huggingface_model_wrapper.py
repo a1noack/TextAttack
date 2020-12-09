@@ -9,6 +9,7 @@ import transformers
 import textattack
 
 from .pytorch_model_wrapper import PyTorchModelWrapper
+import sys
 
 
 class HuggingFaceModelWrapper(PyTorchModelWrapper):
@@ -26,6 +27,7 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
 
         Then make lists (values of dict) into tensors.
         """
+
         model_device = next(self.model.parameters()).device
         input_dict = {k: [_dict[k] for _dict in inputs] for k in inputs[0]}
         input_dict = {
@@ -44,7 +46,7 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
             # scores for each input.
             return outputs[0]
 
-    def __call__(self, text_input_list):
+    def __call__(self, text_input_list, return_logits=False):
         """Passes inputs to HuggingFace models as keyword arguments.
 
         (Regular PyTorch ``nn.Module`` models typically take inputs as
@@ -53,13 +55,16 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
         ids = self.encode(text_input_list)
 
         with torch.no_grad():
-            outputs = textattack.shared.utils.batch_model_predict(
-                self._model_predict, ids, batch_size=self.batch_size
-            )
+            if return_logits:
+                outputs = self.model.model(input_ids=ids, return_dict=True).logits
+            else:
+                outputs = textattack.shared.utils.batch_model_predict(
+                    self._model_predict, ids, batch_size=self.batch_size
+                )
 
         return outputs
 
-    def get_grad(self, text_input):
+    def get_grad(self, text_input, idx_to_del=-1):
         """Get gradient of loss with respect to input tokens.
 
         Args:
@@ -69,7 +74,7 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
         """
         try:
             if self.model.name in ['Pegasus', 'BART', 'T5']:
-                return self.model.get_grad(text_input)
+                return self.model.get_grad(text_input, idx_to_del=idx_to_del)
         except AttributeError:
             pass
 
@@ -93,22 +98,31 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
         self.model.zero_grad()
         model_device = next(self.model.parameters()).device
         ids = self.encode([text_input])
-        predictions = self._model_predict(ids)
 
-        model_device = next(self.model.parameters()).device
-        input_dict = {k: [_dict[k] for _dict in ids] for k in ids[0]}
-        input_dict = {
-            k: torch.tensor(v).to(model_device) for k, v in input_dict.items()
-        }
+
         try:
-            labels = predictions.argmax(dim=1)
-            loss = self.model(**input_dict, labels=labels)[0]
-        except TypeError:
-            raise TypeError(
-                f"{type(self.model)} class does not take in `labels` to calculate loss. "
-                "One cause for this might be if you instantiatedyour model using `transformer.AutoModel` "
-                "(instead of `transformers.AutoModelForSequenceClassification`)."
-            )
+            if self.model.name == 'T5':
+                input_ids = torch.LongTensor(ids[0]['input_ids']).to(model_device).unsqueeze(0)
+                labels = self.model.model.generate(input_ids=input_ids).long()
+                # input_ids AND labels need to be shape = [batch_size, seq_len]
+                loss = self.model.model(input_ids=input_ids, labels=labels)[0]
+        except:
+            predictions = self._model_predict(ids)
+
+            model_device = next(self.model.parameters()).device
+            input_dict = {k: [_dict[k] for _dict in ids] for k in ids[0]}
+            input_dict = {
+                k: torch.tensor(v).to(model_device) for k, v in input_dict.items()
+            }
+            try:
+                labels = predictions.argmax(dim=1)
+                loss = self.model(**input_dict, labels=labels)[0]
+            except TypeError:
+                raise TypeError(
+                    f"{type(self.model)} class does not take in `labels` to calculate loss. "
+                    "One cause for this might be if you instantiatedyour model using `transformer.AutoModel` "
+                    "(instead of `transformers.AutoModelForSequenceClassification`)."
+                )
 
         loss.backward()
 

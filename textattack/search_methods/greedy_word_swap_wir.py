@@ -32,8 +32,9 @@ class GreedyWordSwapWIR(SearchMethod):
         model_wrapper: model wrapper used for gradient-based ranking
     """
 
-    def __init__(self, wir_method="unk"):
+    def __init__(self, wir_method="unk", idx_to_del=-1):
         self.wir_method = wir_method
+        self.idx_to_del = idx_to_del
 
     def _get_index_order(self, initial_text):
         """Returns word indices of ``initial_text`` in descending order of
@@ -85,10 +86,10 @@ class GreedyWordSwapWIR(SearchMethod):
             leave_one_results, search_over = self.get_goal_results(leave_one_texts)
             index_scores = np.array([result.score for result in leave_one_results])
 
-        elif self.wir_method == "gradient":
+        elif self.wir_method in ["gradient"]:
             victim_model = self.get_model()
             index_scores = np.zeros(initial_text.num_words)
-            grad_output = victim_model.get_grad(initial_text.tokenizer_input)
+            grad_output = victim_model.get_grad(initial_text.tokenizer_input, idx_to_del=self.idx_to_del)
             gradient = grad_output["gradient"]
             word2token_mapping = initial_text.align_with_model_tokens(victim_model)
             for i, word in enumerate(initial_text.words):
@@ -100,7 +101,8 @@ class GreedyWordSwapWIR(SearchMethod):
                         agg_grad = torch.mean(gradient[matched_tokens], dim=0)
                         index_scores[i] = torch.norm(agg_grad)
                 except KeyError:
-                    # raise(KeyError("STILL GETTING A KEY ERROR HERE WITH {}. May be and issue with tokenize() in model_wrapper.py".format(word)))
+                    # raise(KeyError("STILL GETTING A KEY ERROR HERE WITH {}. \
+                    # May be and issue with tokenize() in model_wrapper.py".format(word)))
                     index_scores[i] = 0.0
                     sys.stderr.write(f'Getting a key error with: {word}\n')
 
