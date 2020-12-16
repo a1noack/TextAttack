@@ -266,6 +266,11 @@ class Attack:
             A ``SuccessfulAttackResult``, ``FailedAttackResult``,
                 or ``MaximizedAttackResult``.
         """
+        # give ProtectedRadius constraint and SearchMethod access to target word
+        if 'conceal' in str(type(self.goal_function)):
+            self.constraints[-1].protected_word = self.goal_function.target_word
+            self.search_method.target_idx = self.goal_function.target_idx
+            initial_result.target_word = self.goal_function.target_word
         final_result = self.search_method(initial_result)
         self.clear_cache()
         if final_result.goal_status == GoalFunctionResultStatus.SUCCEEDED:

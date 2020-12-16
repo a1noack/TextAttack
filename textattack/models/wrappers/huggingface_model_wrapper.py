@@ -57,8 +57,12 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
         with torch.no_grad():
             if return_logits:
                 model_device = next(self.model.parameters()).device
-                ids = torch.LongTensor([ids[0]['input_ids']]).to(model_device)
-                outputs = self.model.model(input_ids=ids, return_dict=True).logits
+                input_dict = {k: [_dict[k] for _dict in ids] for k in ids[0]}
+                input_dict = {
+                    k: torch.tensor(v).to(model_device) for k, v in input_dict.items()
+                }
+                # outputs = self.model(**input_dict)
+                outputs = self.model.model(**input_dict, return_dict=True).logits
             else:
                 outputs = textattack.shared.utils.batch_model_predict(
                     self._model_predict, ids, batch_size=self.batch_size
