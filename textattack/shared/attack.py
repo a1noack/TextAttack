@@ -291,13 +291,14 @@ class Attack:
         else:
             raise ValueError(f"Unrecognized goal status {final_result.goal_status}")
 
-    def _get_examples_from_dataset(self, dataset, indices=None):
+    def _get_examples_from_dataset(self, dataset, indices=None, attack_ground_truth=True):
         """Gets examples from a dataset and tokenizes them.
 
         Args:
             dataset: An iterable of (text_input, ground_truth_output) pairs
             indices: An iterable of indices of the dataset that we want to attack. If None, attack all samples in dataset.
-
+            attack_ground_truth: If True, try to make output of model diverge from ground_truth output. If False,
+                try to make output of model diverge from the original_output of the model.
         Returns:
             results (Iterable[GoalFunctionResult]): an iterable of GoalFunctionResults of the original examples
         """
@@ -315,6 +316,9 @@ class Attack:
             i = indices.popleft()
             try:
                 text_input, ground_truth_output = dataset[i]
+                if not attack_ground_truth:
+                    ground_truth_output = self.goal_function.model([text_input])[0]
+
             except IndexError:
                 utils.logger.warn(
                     f"Dataset has {len(dataset)} samples but tried to access index {i}. Ending attack early."
@@ -334,16 +338,17 @@ class Attack:
             )
             yield goal_function_result
 
-    def attack_dataset(self, dataset, indices=None):
+    def attack_dataset(self, dataset, indices=None, attack_ground_truth=True):
         """Runs an attack on the given dataset and outputs the results to the
         console and the output file.
 
         Args:
             dataset: An iterable of (text, ground_truth_output) pairs.
-            indices: An iterable of indices of the dataset that we want to attack. If None, attack all samples in dataset.
+            indices: An iterable of indices of the dataset that we want
+                to attack. If None, attack all samples in dataset.
         """
 
-        examples = self._get_examples_from_dataset(dataset, indices=indices)
+        examples = self._get_examples_from_dataset(dataset, indices=indices, attack_ground_truth=attack_ground_truth)
 
         for goal_function_result in examples:
             if goal_function_result.goal_status == GoalFunctionResultStatus.SKIPPED:
