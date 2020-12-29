@@ -34,7 +34,7 @@ class GreedyWordSwapWIR(SearchMethod):
 
     def __init__(self, wir_method="unk"):
         self.wir_method = wir_method
-        self.target_idx = -1
+        self.target_idxs = []
 
     def _get_index_order(self, initial_text):
         """Returns word indices of ``initial_text`` in descending order of
@@ -89,7 +89,7 @@ class GreedyWordSwapWIR(SearchMethod):
         elif self.wir_method in ["gradient"]:
             victim_model = self.get_model()
             index_scores = np.zeros(initial_text.num_words)
-            grad_output = victim_model.get_grad(initial_text.tokenizer_input, idx_to_del=self.target_idx)
+            grad_output = victim_model.get_grad(initial_text.tokenizer_input, idxs_to_del=self.target_idxs)
             gradient = grad_output["gradient"]
             word2token_mapping = initial_text.align_with_model_tokens(victim_model)
             for i, word in enumerate(initial_text.words):

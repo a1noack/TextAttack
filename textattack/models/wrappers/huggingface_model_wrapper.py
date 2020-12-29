@@ -61,7 +61,6 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
                 input_dict = {
                     k: torch.tensor(v).to(model_device) for k, v in input_dict.items()
                 }
-                # outputs = self.model(**input_dict)
                 outputs = self.model.model(**input_dict, return_dict=True).logits
             else:
                 outputs = textattack.shared.utils.batch_model_predict(
@@ -70,7 +69,7 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
 
         return outputs
 
-    def get_grad(self, text_input, idx_to_del=-1):
+    def get_grad(self, text_input, idxs_to_del=-1):
         """Get gradient of loss with respect to input tokens.
 
         Args:
@@ -80,7 +79,7 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
         """
         try:
             if self.model.name in ['Pegasus', 'BART', 'T5']:
-                return self.model.get_grad(text_input, idx_to_del=idx_to_del)
+                return self.model.get_grad(text_input, idxs_to_del=idxs_to_del)
         except AttributeError:
             pass
 
