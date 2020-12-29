@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import re
+from textattack.shared.utils import words_from_text
 
 PEGASUS_PATTERN = re.compile("^(\d|[\.,\$\%])+$")
 
@@ -72,17 +73,23 @@ class ModelWrapper(ABC):
             new_tokens = []
 
             for i in range(len(tokens)):
+                # print(tokens[i])
                 new_tokens_i = []
                 for token in tokens[i]:
                     if token == '':
                         continue
-                    if bool(PEGASUS_PATTERN.match(token)):
-                        token_pieces = re.split('(\.|,|\$|\%)', token)
+                    # if bool(PEGASUS_PATTERN.match(token)):
+                    #     token_pieces = re.split('(\.|,|\$|\%)', token)
+                    #     for token_piece in token_pieces:
+                    #         if token_piece != '':
+                    #             new_tokens_i.append(token_piece)
+                    elif len(token) == 1:
+                        new_tokens_i.append(token)
+                    else:
+                        token_pieces = words_from_text(token)
                         for token_piece in token_pieces:
                             if token_piece != '':
                                 new_tokens_i.append(token_piece)
-                    else:
-                        new_tokens_i.append(token)
                 new_tokens.append(new_tokens_i)
 
             tokens = new_tokens
