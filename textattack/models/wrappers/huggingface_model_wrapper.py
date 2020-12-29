@@ -78,7 +78,7 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
             Dict of ids, tokens, and gradient as numpy array.
         """
         try:
-            if self.model.name in ['Pegasus', 'BART', 'T5']:
+            if self.model.name in ['pegasus', 'bart', 't5']:
                 return self.model.get_grad(text_input, idxs_to_del=idxs_to_del)
         except AttributeError:
             pass
